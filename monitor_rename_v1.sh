@@ -32,7 +32,7 @@ while true; do
     # Iterate over each file pattern
     for pattern in "${PATTERNS[@]}"; do
         # Find all files matching the current pattern
-        matched_files=("$DIR"/"$pattern")
+        matched_files=("$DIR"/$pattern)
 
         # Check if any files match the pattern
         if [[ ${#matched_files[@]} -gt 0 && -e "${matched_files[0]}" ]]; then
