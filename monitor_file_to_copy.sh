@@ -31,7 +31,7 @@ is_file_stable() {
 while true; do
     # Iterate over each file pattern
     for pattern in "${PATTERNS[@]}"; do
-        matched_files=("$DIR"/"$pattern")
+        matched_files=("$DIR"/$pattern)
         # Check if any files match the pattern
         if [[ -e "${matched_files[0]}" ]]; then
             for file in "${matched_files[@]}"; do
