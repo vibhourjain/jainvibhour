@@ -1,23 +1,37 @@
 #!/bin/bash
 
-# Directory to monitor
-DIR="/today/input"
+echo
+
+
+logger()
+{
+datenow=$(date "+%F %r")
+echo -e "${datenow} ${1} ${2}"
+echo -e "${datenow} ${1} ${2}" >> ${LOG_PATH_FILENAME}
+}
+
+UNIX_DDHHMM=`date '+%Y%m%d_%H%M%S'`
+LOG_PATH_FILENAME="/path/logs/FILE_TRANSFER_LOG.LOG"
+SOURCE_DIR="/path/source"
+
+TARGET_HOST=`hostname -f`
+logger "INFO" "TARGET_HOST:${TARGET_HOST}"
+SLEEPER_INTERVAL_CHECK=600
+SLEEPER_INTERVAL_GROWS=30
 
 # List of file name patterns to monitor (date part will be dynamic)
 PATTERNS=(
-    "test1*.csv"
-    "test2*.csv"
-    "test3*.csv"
-    "test4*.csv"
-    "test5*.csv"
-    "test6*.csv"
+    "EQUITIES_TRADE_*.csv"
+    "FX_TRADE_*.csv"
+    "RATES_TRADE_*.csv"
+    "CREDIT_TRADE_*.csv"
 )
 
 # Function to check if a file is stable (size doesn't change over a period of time)
 is_file_stable() {
     local file="$1"
     local initial_size=$(stat -c%s "$file")
-    sleep 5  # Wait for 5 seconds
+    sleep ${SLEEPER_INTERVAL_GROWS}  # Wait for 5 seconds
     local new_size=$(stat -c%s "$file")
     
     if [ "$initial_size" -eq "$new_size" ]; then
@@ -35,6 +49,11 @@ while true; do
         # Check if any files match the pattern
         if [[ -e "${matched_files[0]}" ]]; then
             for file in "${matched_files[@]}"; do
+                
+                # Exclude temporary files (_1.csv, _2.csv, etc.)
+                if [[ "$file" =~ _[0-9]+\.csv$ ]]; then
+                    continue  # Skip the temporary file
+                fi
                 # Check if the file exists, is not already renamed, and is a regular file
                 if [[ -f "$file" && ! "$(basename "$file")" =~ ^done_ ]]; then
                     # Check if the file is stable
